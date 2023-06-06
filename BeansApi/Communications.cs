@@ -27,8 +27,10 @@ namespace BohnTemps.BeansApi
                 requestUrl += paramStr;
             }
 
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri(_baseAddress);
+            HttpClient client = new()
+            {
+                BaseAddress = new Uri(_baseAddress)
+            };
             var response=await client.GetAsync(requestUrl);
             response.EnsureSuccessStatusCode();
             var responseValue = await response.Content.ReadAsStringAsync();
@@ -40,7 +42,7 @@ namespace BohnTemps.BeansApi
 
         public async Task<Stream> DownloadImage(string url, bool useBaseAddress=false)
         {
-            HttpClient client = new HttpClient();
+            HttpClient client = new();
             if (useBaseAddress) client.BaseAddress = new Uri(_baseAddress);
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null; // Dont throw error if just image is missing

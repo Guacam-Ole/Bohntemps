@@ -3,6 +3,8 @@
 using BohnTemps.BeansApi;
 using BohnTemps.Mastodon;
 
+using Microsoft.Extensions.Logging;
+
 namespace Bohntemps
 {
     public class BeansConverter
@@ -10,17 +12,21 @@ namespace Bohntemps
         private readonly Schedule _schedule;
         private readonly Toot _toot;
         private readonly Communications _communications;
+        private readonly ILogger<BeansConverter> _logger;
 
-        public BeansConverter(Schedule schedule, Toot toot, Communications communications)
+        public BeansConverter(Schedule schedule, Toot toot, Communications communications, ILogger<BeansConverter> logger)
         {
             _schedule = schedule;
             _toot = toot;
             _communications = communications;
+            _logger = logger;
         }
 
         public async Task RetrieveAndSend()
         {
+            _logger.LogDebug("Retrieving Data");
             var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
+            _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
             await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
         }
 
@@ -62,9 +68,17 @@ namespace Bohntemps
             }
             toot += "\n\n";
 
-             foreach (var channel in group.Channels)
+            foreach (var channel in group.Channels)
             {
                 toot += $"{channel.ServiceType}:🎮 {channel.Url}\n";
+            }
+
+            toot += "\n\n\n #RBTV #RocketBeans #RocketBeansTV";
+            if (!string.IsNullOrWhiteSpace(element.Game))
+            {
+                toot += "#";
+                toot += string.Concat(element.Game).Where(c => !char.IsWhiteSpace(c));
+                toot += " ";
             }
             return toot;
         }
@@ -82,6 +96,7 @@ namespace Bohntemps
                     foreach (var stream in scheduleElement.Elements)
                     {
                         if (stream.TimeStart > until || stream.TimeStart < from) continue;
+                        _logger.LogDebug($"Added {stream.Game} for {talent} ");
                         elementsToShow.First(q => q.Talent == talent).Elements.Add(stream);
                     }
                 }
@@ -92,7 +107,7 @@ namespace Bohntemps
                 if (elementToShow.Elements.Count == 0) continue;
                 foreach (var singleStream in elementToShow.Elements)
                 {
-                    var toot = CreateTootFromElement( elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
+                    var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
                     Stream? imageStream = null;
                     if (!string.IsNullOrWhiteSpace(singleStream.EpisodeImage))
                     {

@@ -19,7 +19,7 @@ namespace BohnTemps.BeansApi
         public async Task<BohnenResponse<ChannelGroupSchedule>> GetScheduleFor(DateTime day)
         {
             var startDay = day.GetTimestamp();
-            var endDay = day.AddDays(1).AddSeconds(-1).GetTimestamp();
+            var endDay = day.AddDays(2).GetTimestamp();
 
             var schedule = await _communications.GetResponse<BohnenResponse<ChannelGroupSchedule>>("schedule", new Dictionary<string, object> { { "startDay", startDay }, { "endDay", endDay } });
             return schedule;

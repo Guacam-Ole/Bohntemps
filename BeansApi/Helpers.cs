@@ -12,7 +12,5 @@
         {
             return ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
         }
-
-     
     }
 }
