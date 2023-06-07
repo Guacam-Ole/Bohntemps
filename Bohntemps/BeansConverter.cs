@@ -49,24 +49,16 @@ namespace Bohntemps
                 toot += $"um {GetLocalTimeString(element.TimeStart)} Uhr ";
             }
 
-            toot += $"streamt {talent ?? "RBTV"} ";
-            if (element.Bohnen.Count > 0)
-            {
-                toot += $"(mit {string.Join(',', element.Bohnen.Select(q => q.Name))}) ";
-            }
-            if (!string.IsNullOrWhiteSpace(element.Game))
+            toot += $"streamt {talent ?? "RBTV"}: \n\n";
+
+            string title = talent == null ? element.Title : element.Topic;
+
+            toot += title;
+            if (!string.IsNullOrWhiteSpace(element.Game) && string.Compare(element.Game, title, true) != 0)
             {
                 toot += $" ('{element.Game}')";
             }
-            toot += $":\n\n";
-            if (talent == null)
-            {
-                toot += element.Title; // RB-Channel
-            }
-            else
-            {
-                toot += element.Topic;  // Bohne (Title="xxx streamt")
-            }
+
             toot += "\n\n";
 
             foreach (var channel in group.Channels)
@@ -82,11 +74,16 @@ namespace Bohntemps
                 toot += " ";
             }
 
-            if (talent!=null)
+            if (talent != null)
             {
                 toot += "#RBTV_";
                 toot += string.Concat(talent.Where(c => !char.IsWhiteSpace(c)));
                 toot += " ";
+            }
+
+            if (element.Bohnen.Count > 0)
+            {
+                toot += $"\n\n(mit {string.Join(',', element.Bohnen.Select(q => q.Name))}) ";
             }
             return toot;
         }
@@ -123,7 +120,7 @@ namespace Bohntemps
                     }
 
                     string? replyTo = null;
-                    while (toot.Length>_maxLength)
+                    while (toot.Length > _maxLength)
                     {
                         replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
                         toot = toot[_maxLength..];
