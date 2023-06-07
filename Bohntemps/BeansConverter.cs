@@ -121,7 +121,6 @@ namespace Bohntemps
                     {
                         imageStream = await _communications.DownloadImage(singleStream.EpisodeImage);
                     }
-                    toot = toot + toot + toot;
 
                     string? replyTo = null;
                     while (toot.Length>_maxLength)
