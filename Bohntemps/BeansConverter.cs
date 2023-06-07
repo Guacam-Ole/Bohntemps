@@ -27,7 +27,7 @@ namespace Bohntemps
             _logger.LogDebug("Retrieving Data");
             var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
             _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
-            await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(5), todaysShows.Data);
+            await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
         }
 
         private string GetLocalTimeString(DateTime dateTime)
