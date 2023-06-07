@@ -27,7 +27,7 @@ namespace Bohntemps
             _logger.LogDebug("Retrieving Data");
             var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
             _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
-            await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
+            await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(5), todaysShows.Data);
         }
 
         private string GetLocalTimeString(DateTime dateTime)
@@ -73,11 +73,18 @@ namespace Bohntemps
                 toot += $"{channel.ServiceType}:🎮 {channel.Url}\n";
             }
 
-            toot += "\n\n\n #RBTV #RocketBeans #RocketBeansTV";
+            toot += "\n\n\n #RBTV #RocketBeans #RocketBeansTV ";
             if (!string.IsNullOrWhiteSpace(element.Game))
             {
                 toot += "#";
-                toot += string.Concat(element.Game).Where(c => !char.IsWhiteSpace(c));
+                toot += string.Concat(element.Game.Where(c => !char.IsWhiteSpace(c)));
+                toot += " ";
+            }
+
+            if (talent!=null)
+            {
+                toot += "#RBTV_";
+                toot += string.Concat(talent.Where(c => !char.IsWhiteSpace(c)));
                 toot += " ";
             }
             return toot;
