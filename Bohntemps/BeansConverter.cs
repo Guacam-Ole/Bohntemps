@@ -13,6 +13,7 @@ namespace Bohntemps
         private readonly Toot _toot;
         private readonly Communications _communications;
         private readonly ILogger<BeansConverter> _logger;
+        private const int _maxLength = 490;
 
         public BeansConverter(Schedule schedule, Toot toot, Communications communications, ILogger<BeansConverter> logger)
         {
@@ -38,7 +39,7 @@ namespace Bohntemps
 
         public string CreateTootFromElement(ChannelGroup group, ScheduleElement element, string? talent)
         {
-            string toot = "Nicht verpassen:\n";
+            string toot = string.Empty;
             if (element.TimeEnd.HasValue)
             {
                 toot += $"von {GetLocalTimeString(element.TimeStart)} bis {GetLocalTimeString(element.TimeEnd.Value)} Uhr ";
@@ -120,7 +121,16 @@ namespace Bohntemps
                     {
                         imageStream = await _communications.DownloadImage(singleStream.EpisodeImage);
                     }
-                    await _toot.SendToot(toot, imageStream);
+                    toot = toot + toot + toot;
+
+                    string? replyTo = null;
+                    while (toot.Length>_maxLength)
+                    {
+                        replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
+                        toot = toot[_maxLength..];
+                        imageStream = null; // just in first toot
+                    }
+                    await _toot.SendToot(toot, replyTo, imageStream);
                 }
             }
         }

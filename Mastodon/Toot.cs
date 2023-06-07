@@ -1,6 +1,4 @@
-﻿using BohnTemps.BeansApi;
-
-using Mastodon;
+﻿using Mastodon;
 
 using Mastonet;
 using Mastonet.Entities;
@@ -27,29 +25,24 @@ namespace BohnTemps.Mastodon
         {
             _logger.LogDebug("Uploading Image");
             if (fileStream == null) return null;
-            var attachment=await client.UploadMedia(fileStream, filename, description);
+            var attachment = await client.UploadMedia(fileStream, filename, description);
             return attachment.Id;
         }
 
-
-        public async Task SendToot(string content, Stream? media)
+        public async Task<Status> SendToot(string content, string? replyTo, Stream? media)
         {
-
             _logger.LogDebug("Sending Toot");
-            var client=GetServiceClient();
+            var client = GetServiceClient();
             string? attachmentId = null;
-            if (media != null) attachmentId = await UploadMeda(client, media, "preview.png","Vorschaubild zum Kanal");
-            if (attachmentId!=null)
+            if (media != null) attachmentId = await UploadMeda(client, media, "preview.png", "Vorschaubild zum Kanal");
+            if (attachmentId != null)
             {
-                await client.PublishStatus(content, Visibility.Public,  mediaIds: new List<string> { attachmentId });
-
-
-            } else
-            {
-                await client.PublishStatus(content, Visibility.Public);
+                return await client.PublishStatus(content, Visibility.Public, replyTo, mediaIds: new List<string> { attachmentId });
             }
-            _logger.LogDebug("Toot sent");
-
+            else
+            {
+                return await client.PublishStatus(content, Visibility.Public, replyTo);
+            }
         }
 
         private MastodonClient GetServiceClient()
