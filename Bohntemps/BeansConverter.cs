@@ -95,12 +95,12 @@ namespace Bohntemps
 
                 if (element.Bohnen.Count == 1)
                 {
-                    toot += $"\n\n(mit dabei ist {allBohnen.First()} ";
+                    toot += $"\n\n(mit dabei ist {allBohnen.First()}) ";
                 }
                 else
                 {
                     var allButOne = allBohnen[..^1];
-                    toot += $"\n\n(mit dabei sind {string.Join(',', allButOne)} und {allBohnen.Last()} ";
+                    toot += $"\n\n(mit dabei sind {string.Join(',', allButOne)} und {allBohnen.Last()}) ";
                 }
             }
             return toot;
