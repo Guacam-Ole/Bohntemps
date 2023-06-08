@@ -137,6 +137,7 @@ namespace Bohntemps
                 if (elementToShow.Elements.Count == 0) continue;
                 foreach (var singleStream in elementToShow.Elements)
                 {
+                
                     try
                     {
                         var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
@@ -147,6 +148,7 @@ namespace Bohntemps
                         }
 
                         string? replyTo = null;
+                        if (_config.Dummy) return;
                         while (toot.Length > _maxLength)
                         {
                             replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
