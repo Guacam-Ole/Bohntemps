@@ -3,7 +3,11 @@
 using BohnTemps.BeansApi;
 using BohnTemps.Mastodon;
 
+using Mastodon;
+
 using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 namespace Bohntemps
 {
@@ -13,6 +17,7 @@ namespace Bohntemps
         private readonly Toot _toot;
         private readonly Communications _communications;
         private readonly ILogger<BeansConverter> _logger;
+        private readonly Config _config;
         private const int _maxLength = 490;
 
         public BeansConverter(Schedule schedule, Toot toot, Communications communications, ILogger<BeansConverter> logger)
@@ -21,16 +26,20 @@ namespace Bohntemps
             _toot = toot;
             _communications = communications;
             _logger = logger;
+            var config = File.ReadAllText("./config.json");
+            _config= JsonConvert.DeserializeObject<Config>(config);
         }
+
 
         public async Task RetrieveAndSend()
         {
             try
             {
                 _logger.LogDebug("Retrieving Data");
-                var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
+                var today = Helpers.GetTodayUtc();
+                var todaysShows = await _schedule.GetScheduleFor(today, today.Add(_config.ScheduleTimeSpan));
                 _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
-                await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
+                await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.Add(_config.PostTimeSpan), todaysShows.Data);
             }
             catch (Exception ex)
             {

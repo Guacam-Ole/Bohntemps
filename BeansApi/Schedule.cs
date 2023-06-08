@@ -1,11 +1,5 @@
 ﻿using Bohntemps.Models;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace BohnTemps.BeansApi
 {
     public class Schedule
@@ -16,10 +10,11 @@ namespace BohnTemps.BeansApi
         {
             _communications = communications;
         }
-        public async Task<BohnenResponse<ChannelGroupSchedule>> GetScheduleFor(DateTime day)
+
+        public async Task<BohnenResponse<ChannelGroupSchedule>> GetScheduleFor(DateTime start, DateTime end)
         {
-            var startDay = day.GetTimestamp();
-            var endDay = day.AddDays(2).GetTimestamp();
+            var startDay = start.GetTimestamp();
+            var endDay = end.GetTimestamp();
 
             var schedule = await _communications.GetResponse<BohnenResponse<ChannelGroupSchedule>>("schedule", new Dictionary<string, object> { { "startDay", startDay }, { "endDay", endDay } });
             return schedule;
