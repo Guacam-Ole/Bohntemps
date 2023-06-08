@@ -25,10 +25,18 @@ namespace Bohntemps
 
         public async Task RetrieveAndSend()
         {
-            _logger.LogDebug("Retrieving Data");
-            var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
-            _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
-            await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
+            try
+            {
+                _logger.LogDebug("Retrieving Data");
+                var todaysShows = await _schedule.GetScheduleFor(Helpers.GetTodayUtc());
+                _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
+                await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), todaysShows.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "something wrent wrong");
+                throw;
+            }
         }
 
         private string GetLocalTimeString(DateTime dateTime)
@@ -40,13 +48,13 @@ namespace Bohntemps
         public string CreateTootFromElement(ChannelGroup group, ScheduleElement element, string? talent)
         {
             string toot = string.Empty;
-            if (element.TimeEnd.HasValue)
+            if (element.TimeEnd.HasValue && !element.OpenEnd)
             {
                 toot += $"von {GetLocalTimeString(element.TimeStart)} bis {GetLocalTimeString(element.TimeEnd.Value)} Uhr ";
             }
             else
             {
-                toot += $"um {GetLocalTimeString(element.TimeStart)} Uhr ";
+                toot += $"ab {GetLocalTimeString(element.TimeStart)} Uhr ";
             }
 
             toot += $"streamt {talent ?? "RBTV"}: \n\n";
@@ -83,7 +91,17 @@ namespace Bohntemps
 
             if (element.Bohnen.Count > 0)
             {
-                toot += $"\n\n(mit {string.Join(',', element.Bohnen.Select(q => q.Name))}) ";
+                var allBohnen = element.Bohnen.Select(q => q.Name).ToArray();
+
+                if (element.Bohnen.Count == 1)
+                {
+                    toot += $"\n\n(mit dabei ist {allBohnen.First()} ";
+                }
+                else
+                {
+                    var allButOne = allBohnen[..^1];
+                    toot += $"\n\n(mit dabei sind {string.Join(',', allButOne)} und {allBohnen.Last()} ";
+                }
             }
             return toot;
         }
@@ -112,21 +130,29 @@ namespace Bohntemps
                 if (elementToShow.Elements.Count == 0) continue;
                 foreach (var singleStream in elementToShow.Elements)
                 {
-                    var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
-                    Stream? imageStream = null;
-                    if (!string.IsNullOrWhiteSpace(singleStream.EpisodeImage))
+                    try
                     {
-                        imageStream = await _communications.DownloadImage(singleStream.EpisodeImage);
-                    }
+                        var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
+                        Stream? imageStream = null;
+                        if (!string.IsNullOrWhiteSpace(singleStream.EpisodeImage))
+                        {
+                            imageStream = await _communications.DownloadImage(singleStream.EpisodeImage);
+                        }
 
-                    string? replyTo = null;
-                    while (toot.Length > _maxLength)
-                    {
-                        replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
-                        toot = toot[_maxLength..];
-                        imageStream = null; // just in first toot
+                        string? replyTo = null;
+                        while (toot.Length > _maxLength)
+                        {
+                            replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
+                            toot = toot[_maxLength..];
+                            imageStream = null; // just in first toot
+                        }
+                        await _toot.SendToot(toot, replyTo, imageStream);
                     }
-                    await _toot.SendToot(toot, replyTo, imageStream);
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "error sending toot");
+                        throw;
+                    }
                 }
             }
         }
