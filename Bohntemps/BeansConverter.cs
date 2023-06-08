@@ -77,9 +77,7 @@ namespace Bohntemps
             toot += "\n\n\n #RBTV #RocketBeans #RocketBeansTV ";
             if (!string.IsNullOrWhiteSpace(element.Game))
             {
-                toot += "#";
-                toot += string.Concat(element.Game.Where(c => !char.IsWhiteSpace(c)));
-                toot += " ";
+                toot += element.Game.HashTagFromGame();
             }
 
             if (talent != null)
