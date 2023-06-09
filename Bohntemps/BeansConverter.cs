@@ -3,8 +3,6 @@
 using BohnTemps.BeansApi;
 using BohnTemps.Mastodon;
 
-using Mastodon;
-
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -27,9 +25,8 @@ namespace Bohntemps
             _communications = communications;
             _logger = logger;
             var config = File.ReadAllText("./config.json");
-            _config= JsonConvert.DeserializeObject<Config>(config);
+            _config = JsonConvert.DeserializeObject<Config>(config)!;
         }
-
 
         public async Task RetrieveAndSend()
         {
@@ -83,7 +80,7 @@ namespace Bohntemps
                 toot += $"{channel.ServiceType}:🎮 {channel.Url}\n";
             }
 
-            toot += "\n\n\n #RBTV #RocketBeans #RocketBeansTV ";
+            toot += "\n\n\n#RBTV #RocketBeans #RocketBeansTV ";
             if (!string.IsNullOrWhiteSpace(element.Game))
             {
                 toot += element.Game.HashTagFromGame();
@@ -107,7 +104,7 @@ namespace Bohntemps
                 else
                 {
                     var allButOne = allBohnen[..^1];
-                    toot += $"\n\n(mit dabei sind {string.Join(',', allButOne)} und {allBohnen.Last()}) ";
+                    toot += $"\n\n(mit dabei sind {string.Join(", ", allButOne)} und {allBohnen.Last()}) ";
                 }
             }
             return toot;
@@ -137,14 +134,13 @@ namespace Bohntemps
                 if (elementToShow.Elements.Count == 0) continue;
                 foreach (var singleStream in elementToShow.Elements)
                 {
-                
                     try
                     {
                         var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
                         Stream? imageStream = null;
                         if (!string.IsNullOrWhiteSpace(singleStream.EpisodeImage))
                         {
-                            imageStream = await _communications.DownloadImage(singleStream.EpisodeImage);
+                            imageStream = await Communications.DownloadImage(singleStream.EpisodeImage);
                         }
 
                         string? replyTo = null;
@@ -153,7 +149,7 @@ namespace Bohntemps
                         {
                             replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
                             toot = toot[_maxLength..];
-                            imageStream = null; // just in first toot
+                            imageStream = null; // image just in first toot
                         }
                         await _toot.SendToot(toot, replyTo, imageStream);
                     }

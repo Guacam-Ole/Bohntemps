@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bohntemps.Models
+﻿namespace Bohntemps.Models
 {
     public class ChannelGroupSchedule
     {
-        public ChannelGroup ChannelGroup { get; set; }
+        public ChannelGroup ChannelGroup { get; set; } = new ChannelGroup();
         public List<ScheduleItem> Schedule = new List<ScheduleItem>();
-
     }
 }

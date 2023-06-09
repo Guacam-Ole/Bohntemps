@@ -16,7 +16,7 @@ namespace BohnTemps.BeansApi
             var startDay = start.GetTimestamp();
             var endDay = end.GetTimestamp();
 
-            var schedule = await _communications.GetResponse<BohnenResponse<ChannelGroupSchedule>>("schedule", new Dictionary<string, object> { { "startDay", startDay }, { "endDay", endDay } });
+            var schedule = await Communications.GetResponse<BohnenResponse<ChannelGroupSchedule>>("schedule", new Dictionary<string, object> { { "startDay", startDay }, { "endDay", endDay } });
             return schedule;
         }
     }

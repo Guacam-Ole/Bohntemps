@@ -17,11 +17,11 @@ namespace BohnTemps.Mastodon
         public Toot(ILogger<Toot> logger)
         {
             var secrets = File.ReadAllText("./secrets.json");
-            _secrets = JsonConvert.DeserializeObject<Secrets>(secrets);
+            _secrets = JsonConvert.DeserializeObject<Secrets>(secrets)!;
             _logger = logger;
         }
 
-        private async Task<string> UploadMeda(MastodonClient client, Stream fileStream, string filename, string description)
+        private async Task<string?> UploadMeda(MastodonClient client, Stream fileStream, string filename, string description)
         {
             _logger.LogDebug("Uploading Image");
             if (fileStream == null) return null;
