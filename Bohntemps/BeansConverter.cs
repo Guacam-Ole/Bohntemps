@@ -70,14 +70,14 @@ namespace Bohntemps
             toot += title;
             if (!string.IsNullOrWhiteSpace(element.Game) && string.Compare(element.Game, title, true) != 0)
             {
-                toot += $" ('{element.Game}')";
+                toot += $" ({element.Game})";
             }
 
             toot += "\n\n";
 
             foreach (var channel in group.Channels)
             {
-                toot += $"{channel.ServiceType}:🎮 {channel.Url}\n";
+                toot += $"📺 {channel.ServiceType}: {channel.Url}\n";
             }
 
             toot += "\n\n\n#RBTV #RocketBeans #RocketBeansTV ";
@@ -107,6 +107,7 @@ namespace Bohntemps
                     toot += $"\n\n(mit dabei sind {string.Join(", ", allButOne)} und {allBohnen.Last()}) ";
                 }
             }
+            toot += "🫘⌛";
             return toot;
         }
 
