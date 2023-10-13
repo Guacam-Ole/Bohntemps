@@ -23,10 +23,18 @@ namespace BohnTemps.Mastodon
 
         private async Task<string?> UploadMeda(MastodonClient client, Stream fileStream, string filename, string description)
         {
-            _logger.LogDebug("Uploading Image");
             if (fileStream == null) return null;
-            var attachment = await client.UploadMedia(fileStream, filename, description);
-            return attachment.Id;
+            _logger.LogDebug("Uploading file '{filename}' with {size} bytes '{description}'", filename, fileStream.Length, description);
+            try
+            {
+                var attachment = await client.UploadMedia(fileStream, filename, description);
+                return attachment.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "error uploading file");
+                return null;
+            }
         }
 
         public async Task<Status> SendToot(string content, string? replyTo, Stream? media)
