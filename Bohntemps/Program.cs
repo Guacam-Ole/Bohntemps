@@ -37,6 +37,7 @@ while (true)
 {
     try
     {
+        Thread.Sleep(1000 * 60 * 5);
         retries--;
         await converter.RetrieveAndSend();
         Console.WriteLine($"Bohntemps finished. Tooks {(DateTime.Now - now).TotalSeconds} seconds");
