@@ -14,10 +14,6 @@
     <PackageReference Include="NReco.Logging.File" Version="1.1.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BeansApi\BohnTemps.BeansApi.csproj" />
-    <ProjectReference Include="..\Mastodon\BohnTemps.Mastodon.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Update="config.json">
@@ -26,6 +22,12 @@
     <None Update="secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\BeansApi\BohnTemps.BeansApi.csproj" />
+    <ProjectReference Include="..\Mastodon\BohnTemps.Mastodon.csproj" />
   </ItemGroup>
 
 </Project>

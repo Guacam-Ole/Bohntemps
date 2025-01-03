@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bohntemps", "Bohntemps\Bohn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BohnTemps.BeansApi", "BeansApi\BohnTemps.BeansApi.csproj", "{5A4D8E64-5AE4-47E6-913D-DBD1CE62FAED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BohnTemps.Mastodon", "Mastodon\BohnTemps.Mastodon.csproj", "{33E3F4E1-1D31-4C95-B571-7DB73AA68610}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BohnTemps.Mastodon", "Mastodon\BohnTemps.Mastodon.csproj", "{CED387D9-0956-45F4-8241-3516ADF580D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{5A4D8E64-5AE4-47E6-913D-DBD1CE62FAED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A4D8E64-5AE4-47E6-913D-DBD1CE62FAED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A4D8E64-5AE4-47E6-913D-DBD1CE62FAED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33E3F4E1-1D31-4C95-B571-7DB73AA68610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33E3F4E1-1D31-4C95-B571-7DB73AA68610}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33E3F4E1-1D31-4C95-B571-7DB73AA68610}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33E3F4E1-1D31-4C95-B571-7DB73AA68610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CED387D9-0956-45F4-8241-3516ADF580D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED387D9-0956-45F4-8241-3516ADF580D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED387D9-0956-45F4-8241-3516ADF580D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CED387D9-0956-45F4-8241-3516ADF580D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
