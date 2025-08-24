@@ -4,25 +4,25 @@ namespace BohnTemps.BeansApi
 {
     public class Communications
     {
-        private const string _baseAddress = "https://api.rocketbeans.tv/v1/";
+        private const string BaseAddress = "https://api.rocketbeans.tv/v1/";
 
-        public static async Task<T> GetResponse<T>(string url, Dictionary<string, object> paramters)
+        public static async Task<T> GetResponse<T>(string url, Dictionary<string, object>? parameters)
         {
-            string requestUrl = url;
-            if (paramters != null)
+            var requestUrl = url;
+            if (parameters != null)
             {
                 var paramStr = string.Empty;
-                foreach (var paramter in paramters)
+                foreach (var parameter in parameters)
                 {
                     paramStr += paramStr.Length == 0 ? "?" : "&";
-                    paramStr += string.Concat(paramter.Key, "=", paramter.Value);
+                    paramStr += string.Concat(parameter.Key, "=", parameter.Value);
                 }
                 requestUrl += paramStr;
             }
 
             HttpClient client = new()
             {
-                BaseAddress = new Uri(_baseAddress)
+                BaseAddress = new Uri(BaseAddress)
             };
             var response = await client.GetAsync(requestUrl);
             response.EnsureSuccessStatusCode();
@@ -34,7 +34,7 @@ namespace BohnTemps.BeansApi
         public static async Task<Stream?> DownloadImage(string url, bool useBaseAddress = false)
         {
             HttpClient client = new();
-            if (useBaseAddress) client.BaseAddress = new Uri(_baseAddress);
+            if (useBaseAddress) client.BaseAddress = new Uri(BaseAddress);
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null; // Dont throw error if just image is missing
             return await response.Content.ReadAsStreamAsync();

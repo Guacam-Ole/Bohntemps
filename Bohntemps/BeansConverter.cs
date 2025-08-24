@@ -11,18 +11,14 @@ namespace Bohntemps
 {
     public class BeansConverter
     {
-        private readonly Schedule _schedule;
         private readonly Toot _toot;
-        private readonly Communications _communications;
         private readonly ILogger<BeansConverter> _logger;
         private readonly Config _config;
-        private const int _maxLength = 490;
+        private const int MaxLength = 490;
 
-        public BeansConverter(Schedule schedule, Toot toot, Communications communications, ILogger<BeansConverter> logger)
+        public BeansConverter(Toot toot, ILogger<BeansConverter> logger)
         {
-            _schedule = schedule;
             _toot = toot;
-            _communications = communications;
             _logger = logger;
             var config = File.ReadAllText("./config.json");
             _config = JsonConvert.DeserializeObject<Config>(config)!;
@@ -34,27 +30,27 @@ namespace Bohntemps
             {
                 _logger.LogDebug("Retrieving Data");
                 var today = Helpers.GetTodayUtc();
-                var todaysShows = await _schedule.GetScheduleFor(today, today.Add(_config.ScheduleTimeSpan));
-                _logger.LogDebug($"Retrieved {todaysShows.Data.Count()} items");
+                var todaysShows = await Schedule.GetScheduleFor(today, today.Add(_config.ScheduleTimeSpan));
+                _logger.LogDebug("Retrieved '{Count}' items",todaysShows.Data.Count); 
                 await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.Add(_config.PostTimeSpan), todaysShows.Data);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "something wrent wrong");
+                _logger.LogError(ex, "something went wrong");
                 throw;
             }
         }
 
-        private string GetLocalTimeString(DateTime dateTime)
+        private static string GetLocalTimeString(DateTime dateTime)
         {
             var localTime = dateTime.ToLocalTime();
             return localTime.ToString("HH:mm");
         }
 
-        public string CreateTootFromElement(ChannelGroup group, ScheduleElement element, string? talent)
+        private static string CreateTootFromElement(ChannelGroup group, ScheduleElement element, string? talent)
         {
-            string toot = string.Empty;
-            if (element.TimeEnd.HasValue && !element.OpenEnd)
+            var toot = string.Empty;
+            if (element is { TimeEnd: not null, OpenEnd: false })
             {
                 toot += $"von {GetLocalTimeString(element.TimeStart)} bis {GetLocalTimeString(element.TimeEnd.Value)} Uhr ";
             }
@@ -65,10 +61,10 @@ namespace Bohntemps
 
             toot += $"streamt {talent ?? "RBTV"}: \n\n";
 
-            string title = talent == null ? element.Title : element.Topic;
+            var title = talent == null ? element.Title : element.Topic;
 
             toot += title;
-            if (!string.IsNullOrWhiteSpace(element.Game) && string.Compare(element.Game, title, true) != 0)
+            if (!string.IsNullOrWhiteSpace(element.Game) && String.Compare(element.Game, title, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 toot += $" ({element.Game})";
             }
@@ -121,9 +117,8 @@ namespace Bohntemps
                 foreach (var scheduleElement in scheduleHeader.Schedule)
                 {
                     elementsToShow.Add(new BohnContainer { Talent = talent, ChannelGroup = scheduleHeader.ChannelGroup, Elements = new List<ScheduleElement>() });
-                    foreach (var stream in scheduleElement.Elements)
+                    foreach (var stream in scheduleElement.Elements.Where(stream => stream.TimeStart <= until && stream.TimeStart >= from))
                     {
-                        if (stream.TimeStart > until || stream.TimeStart < from) continue;
                         _logger.LogDebug($"Added {stream.Game} for {talent} ");
                         elementsToShow.First(q => q.Talent == talent).Elements.Add(stream);
                     }
@@ -146,10 +141,10 @@ namespace Bohntemps
 
                         string? replyTo = null;
                         if (_config.Dummy) return;
-                        while (toot.Length > _maxLength)
+                        while (toot.Length > MaxLength)
                         {
-                            replyTo = (await _toot.SendToot(toot[.._maxLength], replyTo, imageStream)).Id;
-                            toot = toot[_maxLength..];
+                            replyTo = (await _toot.SendToot(toot[..MaxLength], replyTo, imageStream)).Id;
+                            toot = toot[MaxLength..];
                             imageStream = null; // image just in first toot
                         }
                         await _toot.SendToot(toot, replyTo, imageStream);
