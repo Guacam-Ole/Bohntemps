@@ -1,33 +1,19 @@
-# Use the official .NET 9.0 runtime image
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+ENV TZ="Europe/Berlin"
+WORKDIR /App
 
-# Use the .NET 9.0 SDK for building
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+# Copy everything
+COPY . ./
 
-# Copy solution and project files
-COPY Bohntemps.sln .
-COPY Bohntemps/Bohntemps.csproj Bohntemps/
-COPY BeansApi/BohnTemps.BeansApi.csproj BeansApi/
-COPY Mastodon/BohnTemps.Mastodon.csproj Mastodon/
+# Restore as distinct layers
 
-# Restore dependencies
-RUN dotnet restore "Bohntemps/Bohntemps.csproj"
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -f net8.0 -c Release -o out
 
-# Copy the source code
-COPY . .
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /App
+COPY --from=build-env /App/out .
 
-# Publish the application
-FROM build AS publish
-RUN dotnet publish "Bohntemps/Bohntemps.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-# Final stage
-FROM base AS final
-WORKDIR /app
-
-# Copy the published application
-COPY --from=publish /app/publish .
-
-# Set the entry point
-ENTRYPOINT ["dotnet", "Bohntemps.dll"]
+ENTRYPOINT ["dotnet", "BohnTemps.dll"]
