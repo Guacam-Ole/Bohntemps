@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 ENV TZ="Europe/Berlin"
 WORKDIR /App
 
