@@ -19,6 +19,7 @@ services.AddScoped<Communications>();
 services.AddScoped<BeansConverter>();
 services.AddScoped<Toot>();
 services.AddScoped<Secrets>();
+services.AddScoped<Looper>();
 
 services.AddLogging(cfg => cfg.SetMinimumLevel(LogLevel.Debug));
 services.AddSerilog(cfg =>
