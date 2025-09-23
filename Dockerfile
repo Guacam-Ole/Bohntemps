@@ -13,13 +13,10 @@ COPY BeansApi/BohnTemps.BeansApi.csproj BeansApi/
 COPY Mastodon/BohnTemps.Mastodon.csproj Mastodon/
 
 # Restore dependencies
-RUN dotnet restore "Bohntemps.sln"
+RUN dotnet restore "Bohntemps/Bohntemps.csproj"
 
 # Copy the source code
 COPY . .
-
-# Build the solution
-RUN dotnet build "Bohntemps.sln" -c Release -o /app/build
 
 # Publish the application
 FROM build AS publish
