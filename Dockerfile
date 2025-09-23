@@ -1,20 +1,29 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
-WORKDIR /App
+# Use the official .NET 9.0 runtime image
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
+WORKDIR /app
 
-# Copy everything
-COPY . ./
+# Use the .NET 9.0 SDK for building
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
 
-# Restore as distinct layers
+# Copy the project file
+COPY SoccerUlanzi.csproj .
+RUN dotnet restore "Bohntemps.csproj"
 
-RUN dotnet restore
-# Build and publish a release
-RUN dotnet publish -f net8.0 -c Release -o out
+# Copy the source code
+COPY . .
+RUN dotnet build "Bohntemps.csproj" -c Release -o /app/build
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /App
-COPY --from=build-env /App/out .
+# Publish the application
+FROM build AS publish
+RUN dotnet publish "Bohntemps.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+# Final stage
+FROM base AS final
+WORKDIR /app
 
+# Copy the published application
+COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "BohnTemps.dll"]
+# Set the entry point
+ENTRYPOINT ["dotnet", "Bohntemps.dll"]
