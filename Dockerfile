@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy the project file
-COPY SoccerUlanzi.csproj .
+COPY Bohntemos.csproj .
 RUN dotnet restore "Bohntemps.csproj"
 
 # Copy the source code
