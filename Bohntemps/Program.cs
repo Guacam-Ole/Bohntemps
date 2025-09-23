@@ -1,7 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Reflection;
-using Bohntemps.Models;
+﻿using System.Reflection;
 using Bohntemps;
 using Microsoft.Extensions.DependencyInjection;
 using BohnTemps.BeansApi;
@@ -13,9 +10,8 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.Grafana.Loki;
 
-var now = DateTime.Now;
+
 Console.WriteLine("Bohntemps starting");
-const int maxRetries = 5;
 
 var services = new ServiceCollection();
 services.AddScoped<Schedule>();
@@ -53,22 +49,7 @@ services.AddSerilog(cfg =>
 });
 
 var serviceProvider = services.BuildServiceProvider();
-var converter = serviceProvider.GetRequiredService<BeansConverter>();
+var looper = serviceProvider.GetRequiredService<Looper>();
+looper.Loop().Wait();
 
-var retries = maxRetries;
-while (true)
-{
-    try
-    {
-        Thread.Sleep(1000 * 60 * 5);
-        retries--;
-        await converter.RetrieveAndSend();
-        Console.WriteLine($"Bohntemps finished. Tooks {(DateTime.Now - now).TotalSeconds} seconds");
-        retries = maxRetries;
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine($"{retries}:{e.Message}");
-        if (retries == 0) throw;
-    }
-}
+
