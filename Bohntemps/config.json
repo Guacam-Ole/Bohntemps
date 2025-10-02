@@ -1,5 +1,5 @@
 ﻿{
   "ScheduleTimeSpan": "2.00:00",
   "PostTimeSpan": "12:00",
-  "Dummy": "true"
+  "Dummy": "false"
 }
