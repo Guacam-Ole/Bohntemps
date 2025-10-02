@@ -1,10 +1,7 @@
 ﻿using Bohntemps.Models;
-
 using BohnTemps.BeansApi;
 using BohnTemps.Mastodon;
-
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 
 namespace Bohntemps
@@ -15,6 +12,7 @@ namespace Bohntemps
         private readonly ILogger<BeansConverter> _logger;
         private readonly Config _config;
         private const int MaxLength = 490;
+        private static Dictionary<int, DateTime> _sentToots = [];
 
         public BeansConverter(Toot toot, ILogger<BeansConverter> logger)
         {
@@ -28,10 +26,32 @@ namespace Bohntemps
         {
             try
             {
+                // Cleanup AlreadySent:
+                _sentToots.Where(toots => toots.Value < DateTime.UtcNow.AddDays(-30))
+                    .Select(toot => toot.Key).ToList().ForEach(del => _sentToots.Remove(del));
+
                 _logger.LogDebug("Retrieving Data");
                 var today = Helpers.GetTodayUtc();
                 var todaysShows = await Schedule.GetScheduleFor(today, today.Add(_config.ScheduleTimeSpan));
-                _logger.LogDebug("Retrieved '{Count}' items",todaysShows.Data.Count); 
+
+                var allElements = todaysShows.Data.SelectMany(x => x.Schedule).SelectMany(e => e.Elements);
+
+
+                _logger.LogDebug("Retrieved '{ShowCount}' shows for '{Span}' containing '{ElementCount}' elements",
+                    todaysShows.Data.Count,
+                    _config.ScheduleTimeSpan, allElements.Count());
+
+                todaysShows.Data.SelectMany(x => x.Schedule).ToList()
+                    .ForEach(s => s.Elements.RemoveAll(e => _sentToots.ContainsKey(e.Id)));
+
+                _logger.LogDebug("Reduced to '{ElementCount}' elements", allElements.Count());
+
+                foreach (var scheduleElement in allElements)
+                {
+                    if (!_sentToots.ContainsKey(scheduleElement.Id))
+                        _sentToots.Add(scheduleElement.Id, DateTime.UtcNow);
+                }
+
                 await SendTootsWithinTime(DateTime.UtcNow, DateTime.UtcNow.Add(_config.PostTimeSpan), todaysShows.Data);
             }
             catch (Exception ex)
@@ -52,7 +72,8 @@ namespace Bohntemps
             var toot = string.Empty;
             if (element is { TimeEnd: not null, OpenEnd: false })
             {
-                toot += $"von {GetLocalTimeString(element.TimeStart)} bis {GetLocalTimeString(element.TimeEnd.Value)} Uhr ";
+                toot +=
+                    $"von {GetLocalTimeString(element.TimeStart)} bis {GetLocalTimeString(element.TimeEnd.Value)} Uhr ";
             }
             else
             {
@@ -64,7 +85,8 @@ namespace Bohntemps
             var title = talent == null ? element.Title : element.Topic;
 
             toot += title;
-            if (!string.IsNullOrWhiteSpace(element.Game) && String.Compare(element.Game, title, StringComparison.OrdinalIgnoreCase) != 0)
+            if (!string.IsNullOrWhiteSpace(element.Game) &&
+                String.Compare(element.Game, title, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 toot += $" ({element.Game})";
             }
@@ -103,6 +125,7 @@ namespace Bohntemps
                     toot += $"\n\n(mit dabei sind {string.Join(", ", allButOne)} und {allBohnen.Last()}) ";
                 }
             }
+
             toot += "🫘⌛";
             return toot;
         }
@@ -116,10 +139,12 @@ namespace Bohntemps
                 var talent = scheduleHeader.ChannelGroup.Type != "talent" ? null : scheduleHeader.ChannelGroup.Name;
                 foreach (var scheduleElement in scheduleHeader.Schedule)
                 {
-                    elementsToShow.Add(new BohnContainer { Talent = talent, ChannelGroup = scheduleHeader.ChannelGroup, Elements = new List<ScheduleElement>() });
-                    foreach (var stream in scheduleElement.Elements.Where(stream => stream.TimeStart <= until && stream.TimeStart >= from))
+                    elementsToShow.Add(new BohnContainer
+                        { Talent = talent, ChannelGroup = scheduleHeader.ChannelGroup, Elements = [] });
+                    foreach (var stream in scheduleElement.Elements.Where(stream =>
+                                 stream.TimeStart <= until && stream.TimeStart >= from))
                     {
-                        _logger.LogDebug($"Added {stream.Game} for {talent} ");
+                        _logger.LogDebug("Added {Game} for {Talent} ", stream.Game, talent);
                         elementsToShow.First(q => q.Talent == talent).Elements.Add(stream);
                     }
                 }
@@ -132,7 +157,8 @@ namespace Bohntemps
                 {
                     try
                     {
-                        var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream, elementToShow.Talent);
+                        var toot = CreateTootFromElement(elementToShow.ChannelGroup, singleStream,
+                            elementToShow.Talent);
                         Stream? imageStream = null;
                         if (!string.IsNullOrWhiteSpace(singleStream.EpisodeImage))
                         {
@@ -147,6 +173,7 @@ namespace Bohntemps
                             toot = toot[MaxLength..];
                             imageStream = null; // image just in first toot
                         }
+
                         await _toot.SendToot(toot, replyTo, imageStream);
                     }
                     catch (Exception ex)

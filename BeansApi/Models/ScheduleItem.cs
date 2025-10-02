@@ -3,6 +3,6 @@
     public class ScheduleItem
     {
         public DateTime Date { get; set; }
-        public List<ScheduleElement> Elements { get; set; } = new List<ScheduleElement>();
+        public List<ScheduleElement> Elements { get; set; } = [];
     }
 }

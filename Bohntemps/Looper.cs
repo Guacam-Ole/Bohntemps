@@ -22,11 +22,11 @@ public class Looper
         {
             try
             {
-                Thread.Sleep(TimeSpan.FromMinutes(5));
+
                 retries--;
                 var now = DateTime.Now;
                 await _converter.RetrieveAndSend();
-                _logger.LogDebug("Bohntemps finished. Tooks '{Seconds}' seconds", (DateTime.Now - now).TotalSeconds);
+                _logger.LogDebug("Bohntemps finished. Took '{Seconds}' seconds", (DateTime.Now - now).TotalSeconds);
                 retries = MaxRetries;
             }
             catch (Exception e)
@@ -34,6 +34,11 @@ public class Looper
                 _logger.LogError(e, "Error om loop '{retries}/{max}' retries", retries, MaxRetries);
                 if (retries == 0) throw;
             }
+            finally
+            {
+                Thread.Sleep(TimeSpan.FromMinutes(5));
+            }
+            
         }
     }
 }
