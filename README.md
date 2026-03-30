@@ -1,2 +1,1 @@
-# Bohntemps
-Source für den Bohn Temps Mastodon Bot
+Moved to https://codeberg.org/Guacamole/Bohntemps
